@@ -146,3 +146,68 @@ class Animator {
         }
     }
 }
+
+class RLNode {
+
+    state : State = new State()
+    prev : RLNode 
+    next : RLNode 
+
+    constructor(private i : number) {
+        this.addNeighbor()
+    }
+
+    addNeighbor() {
+        if (this.i < colors.length - 1) {
+            this.next = new RLNode(this.i + 1)
+            this.next.prev = this
+        }
+    }
+
+    draw(context : CanvasRenderingContext2D) {
+        DrawingUtil.drawRLNode(context, this.i, this.state.scale)
+    }
+
+    update(cb : Function) {
+        this.state.update(cb)
+    }
+
+    startUpdating(cb : Function) {
+        this.state.startUpdating(cb)
+    }
+
+    getNext(dir : number, cb : Function) : RLNode {
+        var curr : RLNode = this.prev 
+        if (dir == 1) {
+            curr = this.next 
+        }
+        if (curr) {
+            return curr 
+        }
+        cb()
+        return this 
+    }
+}
+
+class RotatingLadder {
+
+    curr : RLNode = new RLNode(0)
+    dir : number = 1
+
+    draw(context : CanvasRenderingContext2D) {
+        this.curr.draw(context)
+    }
+
+    update(cb : Function) {
+        this.curr.update(() => {
+            this.curr = this.curr.getNext(this.dir, () => {
+                this.dir *= -1
+            })
+            cb()
+        })
+    }
+
+    startUpdating(cb : Function) {
+        this.curr.startUpdating(cb)
+    }
+}
