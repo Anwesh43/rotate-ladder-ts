@@ -1,5 +1,3 @@
-import { ContextReplacementPlugin } from "webpack"
-
 const w : number = window.innerWidth 
 const h : number = window.innerHeight 
 const parts : number = 4 
@@ -31,6 +29,9 @@ class ScaleUtil {
 class DrawingUtil {
 
     static drawLine(context : CanvasRenderingContext2D, x1 : number, y1 : number, x2 : number, y2 : number) {
+        if (x1 == x2 && y1 == y2) {
+            return 
+        }
         context.beginPath()
         context.moveTo(x1, y1)
         context.lineTo(x2, y2)
@@ -39,25 +40,25 @@ class DrawingUtil {
 
     static drawRotLadder(context : CanvasRenderingContext2D, scale : number) {
         const sf : number = ScaleUtil.sinify(scale)
-        const sf1 : number = ScaleUtil.divideScale(sf, 0, parts)
-        const sf2 : number = ScaleUtil.divideScale(sf, 1, parts)
-        const sf3 : number = ScaleUtil.divideScale(sf, 2, parts)
-        const sf4 : number = ScaleUtil.divideScale(sf, 3, parts)
+        const sf1 : number = ScaleUtil.divideScale(sf, 0, parts + 1)
+        const sf2 : number = ScaleUtil.divideScale(sf, 1, parts + 1)
+        const sf3 : number = ScaleUtil.divideScale(sf, 2, parts + 1)
+        const sf4 : number = ScaleUtil.divideScale(sf, 3, parts + 1)
         const size : number = Math.min(w, h) / sizeFactor 
         const gap : number = Math.min(w, h) / gapFactor 
-        const hGap : number = size / (lines + 2)
+        const hGap : number = size / (lines + 1)
         context.save()
         context.translate(w / 2, h / 2)
         context.rotate(Math.PI / 2 * sf4)
         for (var j = 0; j < 2; j++) {
             context.save()
-            context.translate(-gap * 0.5 * sf2, -size / 2)
+            context.translate((1 - 2 * j) * gap * 0.5 * sf2, -size / 2)
             DrawingUtil.drawLine(context, 0, 0, 0, size * sf1)
             context.restore()
         }
         for (var j = 0; j < 6; j++) {
             context.save()
-            context.translate(0, hGap + hGap * j)
+            context.translate(0, -size / 2+ hGap + hGap * j)
             DrawingUtil.drawLine(context, -gap * 0.5 * sf3, 0, gap * 0.5 * sf3, 0)
             context.restore()
         }
@@ -89,6 +90,7 @@ class Stage {
         this.context.fillStyle = backColor 
         this.context.fillRect(0, 0, w , h)
         this.renderer.render(this.context)
+        
     }
 
     handleTap() {
@@ -115,6 +117,7 @@ class State {
 
     update(cb : Function) {
         this.scale += scGap * this.dir 
+        console.log(this.scale)
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir 
             this.dir = 0
