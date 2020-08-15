@@ -211,3 +211,25 @@ class RotatingLadder {
         this.curr.startUpdating(cb)
     }
 }
+
+class Renderer {
+
+    rl : RotatingLadder = new RotatingLadder()
+    animator : Animator = new Animator()
+
+    render(context : CanvasRenderingContext2D) {
+        this.rl.draw(context)
+    }
+
+    handleTap(cb : Function) {
+        this.rl.startUpdating(() => {
+            this.animator.start(() => {
+                cb()
+                this.rl.update(() => {
+                    this.animator.stop()
+                    cb()
+                })
+            })
+        })
+    }
+}
